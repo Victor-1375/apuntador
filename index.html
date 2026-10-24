@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="es"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwOTUzNTYxNzI1NDA0MzM3MTYzNSIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzIwZTJjNDUyYWQ1ZjdkMjhfaW5kZXguaHRtbC0zMzIifSwiZXhwIjoxNzkyODc4MTMzLCJpYXQiOjE3OTI4NzQ1MzMsImFsZyI6IlJTMjU2In0.SJlFTM46lWnZDRktyYI-W-mdb_y7I1Jx5Mx_eZJQikSu_QWnZoBPu79yH8Hj_dLX5cKm4x7NuwCRGsTm8w602Fuei5nqsyC75bn3Ijec3YCs7omOmoQ9klpOTc2Sim7aIYfQWDZNWtx0ZzGzjbSpV3mLeLo5jLv74ZWHD_ShkKTj5496BRNghLHcOHDNndYej12WPdluJxx5OEjQQswdg4CBLRdNP8UswdEMIjbAWafOEHIS1s3uXRDZmj-6PSyAd0SuW180Uv66Ecd46XpykBnSDEM7I70EVEXVJgrOXnhu5CRpnTI9Ax3JQEY-2tcQ8XBxLVhlM7dK7oPqhpbnVQ","c_20e2c452ad5f7d28_index.html-332")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apuntador de Teatro Clásico — Lectura Dramatizada</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip para lectura directa de archivos EPUB -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
+    <!-- Tipografías para lectura escénica -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['"Crimson Pro"', 'Georgia', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-app: #f7f3eb;
+            --bg-panel: #efe8dc;
+            --bg-card: #ffffff;
+            --text-main: #241d17;
+            --text-muted: #6f6253;
+            --border-color: #ded5c5;
+            --stage-dir-color: #7b6f5f;
+        }
+
+        body.theme-light {
+            --bg-app: #f8fafc;
+            --bg-panel: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --stage-dir-color: #64748b;
+        }
+
+        body.theme-dark {
+            --bg-app: #0f141c;
+            --bg-panel: #161e2b;
+            --bg-card: #1c2637;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #2b394e;
+            --stage-dir-color: #8da2be;
+        }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .surface-panel {
+            background-color: var(--bg-panel);
+            border-color: var(--border-color);
+        }
+
+        .surface-card {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+        }
+
+        .text-muted-custom {
+            color: var(--text-muted);
+        }
+
+        .stage-direction {
+            color: var(--stage-dir-color);
+            font-style: italic;
+        }
+
+        body.dim-acotaciones .stage-direction {
+            opacity: 0.4;
+            font-size: 0.9em;
+        }
+
+        body.focus-my-lines .speech-block:not(.my-speech):not(.cue-speech) {
+            opacity: 0.45;
+        }
+
+        @keyframes pulse-focus {
+            0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.6); }
+            70% { box-shadow: 0 0 0 12px rgba(217, 119, 6, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+        }
+
+        .active-jump-target {
+            animation: pulse-focus 1.4s ease-out;
+            outline: 2px solid #d97706;
+            outline-offset: 2px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(135, 120, 100, 0.35);
+            border-radius: 9999px;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: #fff !important; color: #000 !important; }
+            #scriptContainer { max-width: 100% !important; padding: 0 !important; box-shadow: none !important; }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.top-0{top:0px}.bottom-4{bottom:1rem}.left-1\/2{left:50%}.right-4{right:1rem}.top-16{top:4rem}.top-20{top:5rem}.z-30{z-index:30}.z-20{z-index:20}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-0\.5{margin-top:0.125rem;margin-bottom:0.125rem}.my-2\.5{margin-top:0.625rem;margin-bottom:0.625rem}.my-3{margin-top:0.75rem;margin-bottom:0.75rem}.ml-1{margin-left:0.25rem}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-6{margin-bottom:1.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mb-5{margin-bottom:1.25rem}.mb-8{margin-bottom:2rem}.mt-1\.5{margin-top:0.375rem}.mt-10{margin-top:2.5rem}.mt-2{margin-top:0.5rem}.mt-7{margin-top:1.75rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.hidden{display:none}.h-16{height:4rem}.h-4{height:1rem}.h-\[calc\(100vh-4rem\)\]{height:calc(100vh - 4rem)}.h-2\.5{height:0.625rem}.max-h-\[85vh\]{max-height:85vh}.max-h-\[90vh\]{max-height:90vh}.min-h-screen{min-height:100vh}.w-4{width:1rem}.w-80{width:20rem}.w-\[94\%\]{width:94%}.w-full{width:100%}.w-2\.5{width:0.625rem}.min-w-0{min-width:0px}.max-w-7xl{max-width:80rem}.max-w-\[170px\]{max-width:170px}.max-w-2xl{max-width:42rem}.max-w-3xl{max-width:48rem}.max-w-lg{max-width:32rem}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-x-full{--tw-translate-x:-100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-125{--tw-scale-x:1.25;--tw-scale-y:1.25;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-1{gap:0.25rem}.gap-3{gap:0.75rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.space-y-0\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.125rem * var(--tw-space-y-reverse))}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-xl{border-radius:0.75rem}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-t-2{border-top-width:2px}.border-dashed{border-style:dashed}.border-amber-600{--tw-border-opacity:1;border-color:rgb(217 119 6 / var(--tw-border-opacity, 1))}.border-amber-600\/30{border-color:rgb(217 119 6 / 0.3)}.border-amber-700\/30{border-color:rgb(180 83 9 / 0.3)}.border-amber-700\/40{border-color:rgb(180 83 9 / 0.4)}.border-amber-900\/10{border-color:rgb(120 53 15 / 0.1)}.border-amber-600\/50{border-color:rgb(217 119 6 / 0.5)}.border-amber-800\/20{border-color:rgb(146 64 14 / 0.2)}.border-amber-900\/15{border-color:rgb(120 53 15 / 0.15)}.border-black\/10{border-color:rgb(0 0 0 / 0.1)}.bg-amber-700{--tw-bg-opacity:1;background-color:rgb(180 83 9 / var(--tw-bg-opacity, 1))}.bg-black\/50{background-color:rgb(0 0 0 / 0.5)}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-amber-700\/10{background-color:rgb(180 83 9 / 0.1)}.bg-opacity-95{--tw-bg-opacity:0.95}.p-2{padding:0.5rem}.p-1{padding:0.25rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-2{padding-bottom:0.5rem}.pb-28{padding-bottom:7rem}.pb-3{padding-bottom:0.75rem}.pr-1{padding-right:0.25rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.pb-5{padding-bottom:1.25rem}.pl-2{padding-left:0.5rem}.pt-1\.5{padding-top:0.375rem}.pt-6{padding-top:1.5rem}.text-center{text-align:center}.font-sans{font-family:Inter, sans-serif}.font-serif{font-family:"Crimson Pro", Georgia, serif}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-base{font-size:1rem;line-height:1.5rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-2xl{font-size:1.5rem;line-height:2rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-normal{font-weight:400}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-tight{line-height:1.25}.tracking-wider{letter-spacing:0.05em}.tracking-wide{letter-spacing:0.025em}.tracking-widest{letter-spacing:0.1em}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-amber-900{--tw-text-opacity:1;color:rgb(120 53 15 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.decoration-amber-600{-webkit-text-decoration-color:#d97706;text-decoration-color:#d97706}.decoration-wavy{-webkit-text-decoration-style:wavy;text-decoration-style:wavy}.underline-offset-4{text-underline-offset:4px}.accent-amber-700{accent-color:#b45309}.opacity-60{opacity:0.6}.opacity-70{opacity:0.7}.opacity-75{opacity:0.75}.opacity-80{opacity:0.8}.opacity-90{opacity:0.9}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.ring-1{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-amber-600{--tw-ring-opacity:1;--tw-ring-color:rgb(217 119 6 / var(--tw-ring-opacity, 1))}.ring-stone-800{--tw-ring-opacity:1;--tw-ring-color:rgb(41 37 36 / var(--tw-ring-opacity, 1))}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.selection\:bg-amber-500\/30 *::selection{background-color:rgb(245 158 11 / 0.3)}.selection\:bg-amber-500\/30::selection{background-color:rgb(245 158 11 / 0.3)}.hover\:border-amber-600:hover{--tw-border-opacity:1;border-color:rgb(217 119 6 / var(--tw-border-opacity, 1))}.hover\:border-amber-600\/50:hover{border-color:rgb(217 119 6 / 0.5)}.hover\:border-amber-700\/40:hover{border-color:rgb(180 83 9 / 0.4)}.hover\:bg-amber-500\/10:hover{background-color:rgb(245 158 11 / 0.1)}.hover\:bg-amber-800:hover{--tw-bg-opacity:1;background-color:rgb(146 64 14 / var(--tw-bg-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.hover\:opacity-100:hover{opacity:1}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-1:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-amber-600:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(217 119 6 / var(--tw-ring-opacity, 1))}.disabled\:opacity-40:disabled{opacity:0.4}.dark\:border-white\/10:is(.dark *){border-color:rgb(255 255 255 / 0.1)}.dark\:text-amber-400:is(.dark *){--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.dark\:text-amber-300:is(.dark *){--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.dark\:ring-white:is(.dark *){--tw-ring-opacity:1;--tw-ring-color:rgb(255 255 255 / var(--tw-ring-opacity, 1))}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:flex{display:flex}.sm\:gap-2{gap:0.5rem}.sm\:p-6{padding:1.5rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:px-12{padding-left:3rem;padding-right:3rem}.sm\:px-4{padding-left:1rem;padding-right:1rem}.sm\:px-8{padding-left:2rem;padding-right:2rem}.sm\:py-12{padding-top:3rem;padding-bottom:3rem}.sm\:pl-6{padding-left:1.5rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}.sm\:text-base{font-size:1rem;line-height:1.5rem}.sm\:text-xl{font-size:1.25rem;line-height:1.75rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-4xl{font-size:2.25rem;line-height:2.5rem}}@media (min-width: 768px){.md\:inline{display:inline}.md\:max-w-xs{max-width:20rem}}@media (min-width: 1024px){.lg\:sticky{position:sticky}.lg\:z-10{z-index:10}.lg\:hidden{display:none}.lg\:translate-x-0{--tw-translate-x:0px;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}}</style></head>
+<body class="font-sans min-h-screen flex flex-col selection:bg-amber-500/30">
+
+    <!-- CABECERA PRINCIPAL -->
+    <header class="surface-panel border-b sticky top-0 z-30 no-print backdrop-blur-md bg-opacity-95">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+            
+            <!-- Marca y botones de paneles móviles -->
+            <div class="flex items-center gap-2">
+                <button id="toggleSidebarBtn" class="lg:hidden p-2 rounded-xl border surface-card hover:bg-amber-500/10 transition" title="Reparto de personajes">
+                    🎭
+                </button>
+                <button id="toggleTocBtn" class="p-2 rounded-xl border surface-card hover:bg-amber-500/10 transition flex items-center gap-1.5 text-xs font-semibold text-amber-800 dark:text-amber-400" title="Ver índice de escenas">
+                    📑 <span class="hidden sm:inline">Índice</span>
+                </button>
+                <div class="hidden sm:flex items-center gap-2 ml-1">
+                    <span class="text-xl">🏛️</span>
+                    <div>
+                        <h1 class="font-serif font-bold text-base sm:text-lg leading-tight">Apuntador Teatral</h1>
+                        <p id="currentPlaySubtitle" class="text-xs text-muted-custom truncate max-w-[170px] md:max-w-xs">La Noche del Desafío — Jornada I</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- Cargar obra -->
+                <button id="openUploadModalBtn" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs sm:text-sm shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <span>Cargar Obra <span class="hidden md:inline">(EPUB/HTML)</span></span>
+                </button>
+
+                <!-- Descargar index.html -->
+                <button id="downloadAppBtn" class="flex items-center gap-1.5 px-3 py-2 rounded-xl surface-card border border-amber-700/30 hover:bg-amber-500/10 font-medium text-xs sm:text-sm transition" title="Descargar este archivo para subirlo a tu GitHub">
+                    <svg class="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Guardar</span> <span class="font-mono text-[11px]">index.html</span>
+                </button>
+
+                <!-- Selector de muestras -->
+                <select id="sampleSelect" class="surface-card border text-xs sm:text-sm rounded-xl px-2.5 py-2 font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-600">
+                    <option value="muestra1" selected="">Fragmento I: Salón Nocturno (Verso)</option>
+                    <option value="muestra2">Fragmento II: Enredo en la Reja (Abreviaturas)</option>
+                </select>
+
+                <!-- Botón de ajustes -->
+                <button id="toggleSettingsBtn" class="p-2 rounded-xl surface-card border hover:border-amber-600/50 transition" title="Ajustes de lectura">
+                    ⚙️
+                </button>
+            </div>
+        </div>
+
+        <!-- Cajón de ajustes -->
+        <div id="settingsDrawer" class="hidden border-t surface-card px-4 py-3 shadow-lg">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="font-medium text-muted-custom">Tema:</span>
+                    <div class="inline-flex rounded-xl p-1 surface-panel border">
+                        <button data-theme="sepia" class="theme-btn px-2.5 py-1 rounded-lg font-medium bg-amber-700 text-white">Papel</button>
+                        <button data-theme="light" class="theme-btn px-2.5 py-1 rounded-lg font-medium">Claro</button>
+                        <button data-theme="dark" class="theme-btn px-2.5 py-1 rounded-lg font-medium">Noche</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="font-medium text-muted-custom">Tamaño:</span>
+                    <div class="inline-flex items-center rounded-xl surface-panel border p-1 gap-1">
+                        <button id="fontDecreaseBtn" class="px-2 py-0.5 rounded font-bold">A−</button>
+                        <span id="fontSizeLabel" class="px-2 font-mono text-xs">20px</span>
+                        <button id="fontIncreaseBtn" class="px-2 py-0.5 rounded font-bold">A+</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="indentVerseToggle" checked="" class="w-4 h-4 accent-amber-700 rounded">
+                        <span>Sangría de verso</span>
+                    </label>
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="dimAcotacionesToggle" class="w-4 h-4 accent-amber-700 rounded">
+                        <span>Atenuar acotaciones</span>
+                    </label>
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" id="focusMyLinesToggle" class="w-4 h-4 accent-amber-700 rounded">
+                        <span>Atenuar ajenos</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CUERPO PRINCIPAL -->
+    <div class="flex-1 max-w-7xl w-full mx-auto flex relative">
+
+        <!-- OVERLAYS PARA MÓVIL -->
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden no-print"></div>
+
+        <!-- PANEL 1: REPARTO DE PERSONAJES (IZQUIERDA) -->
+        <aside id="characterSidebar" class="w-80 surface-panel border-r shrink-0 fixed lg:sticky top-16 h-[calc(100vh-4rem)] z-40 lg:z-10 overflow-y-auto transition-transform -translate-x-full lg:translate-x-0 no-print flex flex-col">
+            <div class="p-4 border-b border-amber-900/10 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="font-serif font-bold text-base sm:text-lg flex items-center gap-1.5">
+                            <span>🎭 Mi Reparto</span>
+                            <span id="selectedCountBadge" class="text-[11px] font-sans px-2 py-0.5 rounded-full bg-amber-700 text-white">1</span>
+                        </h2>
+                        <p class="text-[11px] text-muted-custom">Selecciona qué personaje(s) vas a leer</p>
+                    </div>
+                    <button id="clearSelectionBtn" class="text-xs text-amber-800 dark:text-amber-400 hover:underline">Limpiar</button>
+                </div>
+
+                <!-- Pre-aviso pie de entrada -->
+                <div class="p-2.5 rounded-xl surface-card border border-amber-600/30 text-xs">
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input type="checkbox" id="cueAlertToggle" checked="" class="mt-0.5 w-4 h-4 accent-amber-700 rounded">
+                        <div>
+                            <span class="font-semibold block text-amber-900 dark:text-amber-300">⚡ Aviso de «Pie de entrada»</span>
+                            <span class="text-muted-custom text-[11px]">Señala la frase final del personaje previo para entrar sin vacilaciones.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Unir abreviaturas -->
+                <div class="flex gap-2">
+                    <button id="autoMergeAbbrBtn" class="flex-1 text-xs py-1.5 px-2 rounded-lg surface-card border hover:border-amber-600 font-medium transition" title="Agrupa abreviaturas como D. JUAN y DON JUAN">
+                        🔗 Unir abreviaturas
+                    </button>
+                    <button id="openMergeModalBtn" class="text-xs py-1.5 px-2 rounded-lg surface-card border hover:border-amber-600 font-medium transition">
+                        Agrupar...
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de personajes -->
+            <div class="p-3 flex-1 space-y-2 overflow-y-auto" id="characterListContainer">
+                <div class="rounded-2xl surface-card border p-2.5 transition ring-2 ring-amber-600 shadow-sm" style="background-color: rgba(245, 158, 11, 0.22); border-color: #d97706;">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer select-none">
+                            <input type="checkbox" data-char="DON FÉLIX" class="char-cb w-4 h-4 rounded accent-amber-700 shrink-0" checked="">
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-xs sm:text-sm truncate flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #d97706"></span>
+                                    <span class="truncate">DON FÉLIX</span>
+                                </div>
+                                
+                            </div>
+                        </label>
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full surface-panel border shrink-0">
+                            7 parl.
+                        </span>
+                    </div>
+
+                    
+                    <div class="mt-2 pt-1.5 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
+                        <span class="text-[10px] font-medium text-muted-custom">Color:</span>
+                        <div class="flex items-center gap-1">
+                            
+                                <button type="button" data-char="DON FÉLIX" data-color="0" class="color-btn w-4 h-4 rounded-full transition transform scale-125 ring-2 ring-stone-800 dark:ring-white" style="background-color: #d97706"></button>
+                            
+                                <button type="button" data-char="DON FÉLIX" data-color="1" class="color-btn w-4 h-4 rounded-full transition transform opacity-70 hover:opacity-100" style="background-color: #059669"></button>
+                            
+                                <button type="button" data-char="DON FÉLIX" data-color="2" class="color-btn w-4 h-4 rounded-full transition transform opacity-70 hover:opacity-100" style="background-color: #0284c7"></button>
+                            
+                                <button type="button" data-char="DON FÉLIX" data-color="3" class="color-btn w-4 h-4 rounded-full transition transform opacity-70 hover:opacity-100" style="background-color: #e11d48"></button>
+                            
+                                <button type="button" data-char="DON FÉLIX" data-color="4" class="color-btn w-4 h-4 rounded-full transition transform opacity-70 hover:opacity-100" style="background-color: #7c3aed"></button>
+                            
+                                <button type="button" data-char="DON FÉLIX" data-color="5" class="color-btn w-4 h-4 rounded-full transition transform opacity-70 hover:opacity-100" style="background-color: #ea580c"></button>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-2xl surface-card border p-2.5 transition hover:border-amber-700/40" style="">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer select-none">
+                            <input type="checkbox" data-char="DOÑA BEATRIZ" class="char-cb w-4 h-4 rounded accent-amber-700 shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-xs sm:text-sm truncate flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #e11d48"></span>
+                                    <span class="truncate">DOÑA BEATRIZ</span>
+                                </div>
+                                <div class="text-[10px] text-muted-custom truncate">Alias: BEATRIZ</div>
+                            </div>
+                        </label>
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full surface-panel border shrink-0">
+                            5 parl.
+                        </span>
+                    </div>
+
+                    
+                </div>
+                <div class="rounded-2xl surface-card border p-2.5 transition hover:border-amber-700/40" style="">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer select-none">
+                            <input type="checkbox" data-char="TRISTÁN" class="char-cb w-4 h-4 rounded accent-amber-700 shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-xs sm:text-sm truncate flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #059669"></span>
+                                    <span class="truncate">TRISTÁN</span>
+                                </div>
+                                
+                            </div>
+                        </label>
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full surface-panel border shrink-0">
+                            3 parl.
+                        </span>
+                    </div>
+
+                    
+                </div>
+                <div class="rounded-2xl surface-card border p-2.5 transition hover:border-amber-700/40" style="">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer select-none">
+                            <input type="checkbox" data-char="CELIA" class="char-cb w-4 h-4 rounded accent-amber-700 shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-xs sm:text-sm truncate flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #7c3aed"></span>
+                                    <span class="truncate">CELIA</span>
+                                </div>
+                                
+                            </div>
+                        </label>
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full surface-panel border shrink-0">
+                            2 parl.
+                        </span>
+                    </div>
+
+                    
+                </div>
+                <div class="rounded-2xl surface-card border p-2.5 transition hover:border-amber-700/40" style="">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer select-none">
+                            <input type="checkbox" data-char="DON RODRIGO" class="char-cb w-4 h-4 rounded accent-amber-700 shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-xs sm:text-sm truncate flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #ea580c"></span>
+                                    <span class="truncate">DON RODRIGO</span>
+                                </div>
+                                
+                            </div>
+                        </label>
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full surface-panel border shrink-0">
+                            2 parl.
+                        </span>
+                    </div>
+
+                    
+                </div></div>
+
+            <!-- Añadir personaje manual -->
+            <div class="p-3 border-t border-amber-900/10 surface-card">
+                <form id="addCustomCharForm" class="flex gap-1.5">
+                    <input type="text" id="customCharInput" placeholder="Añadir nombre..." class="flex-1 text-xs px-3 py-1.5 rounded-lg surface-panel border uppercase focus:outline-none focus:ring-1 focus:ring-amber-600">
+                    <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-amber-700 text-white text-xs font-semibold">+</button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- PANEL 2 DESPLEGABLE: ÍNDICE DE ESCENAS CON PERSONAJES PRESENTES -->
+        <div id="tocModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-3 sm:p-6 no-print">
+            <div class="surface-card border rounded-3xl max-w-2xl w-full p-5 shadow-2xl flex flex-col max-h-[85vh]">
+                <div class="flex items-center justify-between border-b pb-3 mb-3">
+                    <div>
+                        <h3 class="font-serif font-bold text-lg sm:text-xl flex items-center gap-2">
+                            <span>📑 Índice de la Obra</span>
+                        </h3>
+                        <p class="text-xs text-muted-custom">Salta directamente a cualquier acto o escena y revisa quién interviene</p>
+                    </div>
+                    <button id="closeTocBtn" class="p-2 rounded-xl hover:bg-amber-500/10 text-sm">✕</button>
+                </div>
+
+                <div id="tocList" class="flex-1 overflow-y-auto space-y-2 pr-1 text-sm">
+                    <div class="p-3 rounded-2xl surface-panel border hover:border-amber-600 transition flex items-start justify-between gap-3 cursor-pointer toc-item" data-target="scene-0">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">JORNADA PRIMERA</span>
+                            <div class="font-serif font-bold text-sm sm:text-base">JORNADA PRIMERA</div>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                <span class="text-[10px] text-muted-custom italic">Sin nombres especificados al inicio</span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-xl bg-amber-700/10 text-amber-800 dark:text-amber-300 shrink-0">
+                            Ir ➔
+                        </span>
+                    </div>
+                
+                    <div class="p-3 rounded-2xl surface-panel border hover:border-amber-600 transition flex items-start justify-between gap-3 cursor-pointer toc-item" data-target="scene-2">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">JORNADA PRIMERA</span>
+                            <div class="font-serif font-bold text-sm sm:text-base">ESCENA I</div>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block font-bold ring-1 ring-amber-600" style="background-color: #b45309; color: #ffffff;">
+                            ⭐ DON FÉLIX
+                        </span>
+                     
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block opacity-80" style="background: rgba(120,110,95,0.15);">
+                            TRISTÁN
+                        </span>
+                    
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-xl bg-amber-700/10 text-amber-800 dark:text-amber-300 shrink-0">
+                            Ir ➔
+                        </span>
+                    </div>
+                
+                    <div class="p-3 rounded-2xl surface-panel border hover:border-amber-600 transition flex items-start justify-between gap-3 cursor-pointer toc-item" data-target="scene-9">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">JORNADA PRIMERA</span>
+                            <div class="font-serif font-bold text-sm sm:text-base">ESCENA II</div>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block opacity-80" style="background: rgba(120,110,95,0.15);">
+                            DOÑA BEATRIZ
+                        </span>
+                     
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block opacity-80" style="background: rgba(120,110,95,0.15);">
+                            CELIA
+                        </span>
+                     
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block opacity-80" style="background: rgba(120,110,95,0.15);">
+                            DOÑA BEATRIZ
+                        </span>
+                     
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block font-bold ring-1 ring-amber-600" style="background-color: #b45309; color: #ffffff;">
+                            ⭐ DON FÉLIX
+                        </span>
+                     
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block opacity-80" style="background: rgba(120,110,95,0.15);">
+                            TRISTÁN
+                        </span>
+                    
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-xl bg-amber-700/10 text-amber-800 dark:text-amber-300 shrink-0">
+                            Ir ➔
+                        </span>
+                    </div>
+                
+                    <div class="p-3 rounded-2xl surface-panel border hover:border-amber-600 transition flex items-start justify-between gap-3 cursor-pointer toc-item" data-target="scene-21">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">JORNADA PRIMERA</span>
+                            <div class="font-serif font-bold text-sm sm:text-base">ESCENA III</div>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block opacity-80" style="background: rgba(120,110,95,0.15);">
+                            DON RODRIGO
+                        </span>
+                     
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block opacity-80" style="background: rgba(120,110,95,0.15);">
+                            DOÑA BEATRIZ
+                        </span>
+                     
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block font-bold ring-1 ring-amber-600" style="background-color: #b45309; color: #ffffff;">
+                            ⭐ DON FÉLIX
+                        </span>
+                    
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-xl bg-amber-700/10 text-amber-800 dark:text-amber-300 shrink-0">
+                            Ir ➔
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÁREA CENTRAL DE LECTURA DEL LIBRETO -->
+        <main class="flex-1 min-w-0 px-3 sm:px-8 py-6 pb-28">
+            
+            <!-- Resumen de papeles activos -->
+            <div class="max-w-3xl mx-auto mb-6 p-3 rounded-2xl surface-card border shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
+                <div class="flex items-center gap-1.5 flex-wrap" id="activeRolesPills"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm" style="background-color: #b45309; color: #ffffff">
+                        <span>🎭 DON FÉLIX</span>
+                        <span class="opacity-80 font-normal">(7)</span>
+                    </span></div>
+                <div class="text-xs font-medium text-muted-custom" id="statsSummaryText">Tienes 7 turnos</div>
+            </div>
+
+            <!-- Contenedor del libreto -->
+            <article id="scriptContainer" class="max-w-3xl mx-auto surface-card border rounded-3xl shadow-sm px-5 sm:px-12 py-8 sm:py-12 font-serif transition-all" style="font-size: 20px; line-height: 1.65;">
+                <header class="text-center mb-8 pb-5 border-b border-amber-900/15">
+                    <p class="font-sans text-[11px] uppercase tracking-widest text-muted-custom mb-1">Lectura Dramatizada</p>
+                    <h1 class="font-serif font-bold text-2xl sm:text-4xl">La Noche del Desafío — Jornada I</h1>
+                </header>
+                
+                        <div id="scene-0" class="mt-10 mb-5 pt-6 border-t-2 border-amber-800/20 text-center">
+                            <h2 class="font-serif font-bold uppercase tracking-wider text-2xl sm:text-3xl text-amber-800 dark:text-amber-400">
+                                JORNADA PRIMERA
+                            </h2>
+                        </div>
+                    
+                        <div class="my-2.5 px-4 text-center stage-direction text-base ">
+                            Salón de una quinta antigua en Toledo. Noche serena.
+                        </div>
+                    
+                        <div id="scene-2" class="mt-7 mb-3 text-center">
+                            <h2 class="font-serif font-bold uppercase tracking-wider text-lg sm:text-xl opacity-90">
+                                ESCENA I
+                            </h2>
+                        </div>
+                    
+                        <div class="my-2.5 px-4 text-center stage-direction text-base font-medium">
+                            Salen DON FÉLIX con capa y espada, y TRISTÁN con farol.
+                        </div>
+                    
+                        <section id="speech-4" data-my-turn="1" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition my-speech shadow-sm " style="background-color: rgba(245, 158, 11, 0.22); border-left: 5px solid #d97706;">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="color: #d97706;">
+                                    DON FÉLIX
+                                </span>
+                                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: #b45309; color: #ffffff">Turno #1</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Apaga ya esa luz, Tristán ladino,
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                que la sombra en la noche es fiel testigo
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                cuando el honor desafía su destino.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-5" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  cue-speech" style="border-left: 3px dashed #d97706; background-color: rgba(217, 119, 6, 0.05);">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    TRISTÁN
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                <div class="stage-direction my-0.5"><span class="stage-direction">(Temblando y mirando alrededor.)</span></div>
+                            <div class="pl-2 sm:pl-6 ">
+                                Señor, por Dios, parad aqueste bulto;
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                que el rondar callejones sin abrigo
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 underline decoration-amber-600 decoration-wavy underline-offset-4 font-semibold">
+                                más parece locura que deseo culto.
+                            </div>
+                        
+                            </div>
+                            
+                        <div class="mt-2 pt-1 border-t border-dashed border-amber-600/50 flex items-center justify-between text-xs font-sans text-amber-800 dark:text-amber-300 font-semibold">
+                            <span>⚡ ¡Atento al pie! Entras ahora como DON FÉLIX</span>
+                            <span class="text-[10px] opacity-75">Siguiente línea ↓</span>
+                        </div>
+                    
+                        </section>
+                    
+                        <section id="speech-6" data-my-turn="2" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition my-speech shadow-sm " style="background-color: rgba(245, 158, 11, 0.22); border-left: 5px solid #d97706;">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="color: #d97706;">
+                                    DON FÉLIX
+                                </span>
+                                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: #b45309; color: #ffffff">Turno #2</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                ¿Temes acaso el brillo de un acero?
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-7" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  cue-speech" style="border-left: 3px dashed #d97706; background-color: rgba(217, 119, 6, 0.05);">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    TRISTÁN
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Temo quebrar la crisma en el regato,
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                que yo de fiel criado soy sincero
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                y vos de enamorado sois ingrato.
+                            </div>
+                        <div class="stage-direction my-0.5"><span class="stage-direction">(Óyense pasos precipitados dentro.)</span></div>
+                            <div class="pl-2 sm:pl-6 underline decoration-amber-600 decoration-wavy underline-offset-4 font-semibold">
+                                ¡Santas benditas! Alguien cerca pasa.
+                            </div>
+                        
+                            </div>
+                            
+                        <div class="mt-2 pt-1 border-t border-dashed border-amber-600/50 flex items-center justify-between text-xs font-sans text-amber-800 dark:text-amber-300 font-semibold">
+                            <span>⚡ ¡Atento al pie! Entras ahora como DON FÉLIX</span>
+                            <span class="text-[10px] opacity-75">Siguiente línea ↓</span>
+                        </div>
+                    
+                        </section>
+                    
+                        <section id="speech-8" data-my-turn="3" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition my-speech shadow-sm " style="background-color: rgba(245, 158, 11, 0.22); border-left: 5px solid #d97706;">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="color: #d97706;">
+                                    DON FÉLIX
+                                </span>
+                                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: #b45309; color: #ffffff">Turno #3</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Embozate, villano, y ten la calma.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <div id="scene-9" class="mt-7 mb-3 text-center">
+                            <h2 class="font-serif font-bold uppercase tracking-wider text-lg sm:text-xl opacity-90">
+                                ESCENA II
+                            </h2>
+                        </div>
+                    
+                        <div class="my-2.5 px-4 text-center stage-direction text-base font-medium">
+                            Salen DOÑA BEATRIZ con manto suelto, y CELIA apresurada; dichos.
+                        </div>
+                    
+                        <section id="speech-11" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  " style="">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    DOÑA BEATRIZ
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                ¡Celia, acude al postigo de la casa!
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                ¿No escuchaste una queja dolorida?
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-12" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  " style="">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    CELIA
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Viento que por los sauces se desliza,
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                o gato montés que busca su comida.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-13" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  cue-speech" style="border-left: 3px dashed #d97706; background-color: rgba(217, 119, 6, 0.05);">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    DOÑA BEATRIZ <span class="font-normal opacity-60 text-[10px]">(BEATRIZ)</span>
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                <div class="stage-direction my-0.5"><span class="stage-direction">(Descubriendo el rostro a la luna.)</span></div>
+                            <div class="pl-2 sm:pl-6 underline decoration-amber-600 decoration-wavy underline-offset-4 font-semibold">
+                                ¡Ay de mí, que el amor todo lo atiza!
+                            </div>
+                        
+                            </div>
+                            
+                        <div class="mt-2 pt-1 border-t border-dashed border-amber-600/50 flex items-center justify-between text-xs font-sans text-amber-800 dark:text-amber-300 font-semibold">
+                            <span>⚡ ¡Atento al pie! Entras ahora como DON FÉLIX</span>
+                            <span class="text-[10px] opacity-75">Siguiente línea ↓</span>
+                        </div>
+                    
+                        </section>
+                    
+                        <section id="speech-14" data-my-turn="4" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition my-speech shadow-sm " style="background-color: rgba(245, 158, 11, 0.22); border-left: 5px solid #d97706;">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="color: #d97706;">
+                                    DON FÉLIX
+                                </span>
+                                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: #b45309; color: #ffffff">Turno #4</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                <div class="stage-direction my-0.5"><span class="stage-direction">(Llegándose a ella con cortesía.)</span></div>
+                            <div class="pl-2 sm:pl-6 ">
+                                Si suspiráis por culpa de mi huella,
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                haced culpable al resplandor divino
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                que roba prez y lauro a la más bella.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-15" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  cue-speech" style="border-left: 3px dashed #d97706; background-color: rgba(217, 119, 6, 0.05);">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    DOÑA BEATRIZ
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                ¿Quién sois, audaz, que al despuntar la hora
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 underline decoration-amber-600 decoration-wavy underline-offset-4 font-semibold">
+                                rompéis el cerco de mi estancia honrada?
+                            </div>
+                        
+                            </div>
+                            
+                        <div class="mt-2 pt-1 border-t border-dashed border-amber-600/50 flex items-center justify-between text-xs font-sans text-amber-800 dark:text-amber-300 font-semibold">
+                            <span>⚡ ¡Atento al pie! Entras ahora como DON FÉLIX</span>
+                            <span class="text-[10px] opacity-75">Siguiente línea ↓</span>
+                        </div>
+                    
+                        </section>
+                    
+                        <section id="speech-16" data-my-turn="5" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition my-speech shadow-sm " style="background-color: rgba(245, 158, 11, 0.22); border-left: 5px solid #d97706;">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="color: #d97706;">
+                                    DON FÉLIX
+                                </span>
+                                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: #b45309; color: #ffffff">Turno #5</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Quien vuestro esclavo y siervo se corona.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-17" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  " style="">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    TRISTÁN
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                <div class="stage-direction my-0.5"><span class="stage-direction">(Aparte a CELIA.)</span></div>
+                            <div class="pl-2 sm:pl-6 ">
+                                Ya cayó la dama en la celada.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-18" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  " style="">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    CELIA
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                <div class="stage-direction my-0.5"><span class="stage-direction">(Aparte a TRISTÁN.)</span></div>
+                            <div class="pl-2 sm:pl-6 ">
+                                Calla, escudero lelo, o te doy coz.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-19" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  cue-speech" style="border-left: 3px dashed #d97706; background-color: rgba(217, 119, 6, 0.05);">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    DOÑA BEATRIZ <span class="font-normal opacity-60 text-[10px]">(BEATRIZ)</span>
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Caballero, volved a vuestro paso,
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 underline decoration-amber-600 decoration-wavy underline-offset-4 font-semibold">
+                                que mi hermano don Rodrigo ronda el soto.
+                            </div>
+                        
+                            </div>
+                            
+                        <div class="mt-2 pt-1 border-t border-dashed border-amber-600/50 flex items-center justify-between text-xs font-sans text-amber-800 dark:text-amber-300 font-semibold">
+                            <span>⚡ ¡Atento al pie! Entras ahora como DON FÉLIX</span>
+                            <span class="text-[10px] opacity-75">Siguiente línea ↓</span>
+                        </div>
+                    
+                        </section>
+                    
+                        <section id="speech-20" data-my-turn="6" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition my-speech shadow-sm " style="background-color: rgba(245, 158, 11, 0.22); border-left: 5px solid #d97706;">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="color: #d97706;">
+                                    DON FÉLIX
+                                </span>
+                                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: #b45309; color: #ffffff">Turno #6</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Aunque bajase Marte del Parnaso,
+                            </div>
+                        
+                            <div class="pl-2 sm:pl-6 ">
+                                de aquí no partiré con voto roto.
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <div id="scene-21" class="mt-7 mb-3 text-center">
+                            <h2 class="font-serif font-bold uppercase tracking-wider text-lg sm:text-xl opacity-90">
+                                ESCENA III
+                            </h2>
+                        </div>
+                    
+                        <div class="my-2.5 px-4 text-center stage-direction text-base ">
+                            Sale DON RODRIGO con la espada desenvainada; dichos.
+                        </div>
+                    
+                        <section id="speech-23" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  " style="">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    DON RODRIGO
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                ¡Traidor! ¿Aquesta mengua en mi heredad?
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-24" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  " style="">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    DOÑA BEATRIZ <span class="font-normal opacity-60 text-[10px]">(BEATRIZ)</span>
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                ¡Hermano, detened la fiera espada!
+                            </div>
+                        
+                            </div>
+                            
+                        </section>
+                    
+                        <section id="speech-25" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition  cue-speech" style="border-left: 3px dashed #d97706; background-color: rgba(217, 119, 6, 0.05);">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="">
+                                    DON RODRIGO
+                                </span>
+                                
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 underline decoration-amber-600 decoration-wavy underline-offset-4 font-semibold">
+                                ¡Morir habrás por tanta liviandad!
+                            </div>
+                        
+                            </div>
+                            
+                        <div class="mt-2 pt-1 border-t border-dashed border-amber-600/50 flex items-center justify-between text-xs font-sans text-amber-800 dark:text-amber-300 font-semibold">
+                            <span>⚡ ¡Atento al pie! Entras ahora como DON FÉLIX</span>
+                            <span class="text-[10px] opacity-75">Siguiente línea ↓</span>
+                        </div>
+                    
+                        </section>
+                    
+                        <section id="speech-26" data-my-turn="7" class="speech-block my-3 rounded-2xl px-4 py-2.5 transition my-speech shadow-sm " style="background-color: rgba(245, 158, 11, 0.22); border-left: 5px solid #d97706;">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="color: #d97706;">
+                                    DON FÉLIX
+                                </span>
+                                <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: #b45309; color: #ffffff">Turno #7</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                
+                            <div class="pl-2 sm:pl-6 ">
+                                Defended vuestro pecho, si os agrada.
+                            </div>
+                        <div class="stage-direction my-0.5"><span class="stage-direction">(Pelean con fiereza y caen las antorchas.)</span></div>
+                            </div>
+                            
+                        </section>
+                    
+            </article>
+        </main>
+    </div>
+
+    <!-- BARRA FLOTANTE DE NAVEGACIÓN DE TURNOS -->
+    <div id="floatingNav" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 no-print w-[94%] max-w-lg">
+        <div class="surface-card border border-amber-700/30 shadow-xl rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2 backdrop-blur-md bg-opacity-95">
+            <button id="prevCueBtn" class="flex items-center gap-1 px-3 py-1.5 rounded-xl surface-panel border hover:border-amber-600 text-xs sm:text-sm font-medium transition disabled:opacity-40">
+                ◀ <span>Anterior</span>
+            </button>
+
+            <div class="text-center flex-1 min-w-0 px-2">
+                <div id="navProgressText" class="text-xs sm:text-sm font-bold truncate">7 turnos asignados</div>
+                <div id="navNextSpeakerHint" class="text-[10px] text-muted-custom truncate">Pulsa «Mi turno» para avanzar</div>
+            </div>
+
+            <button id="nextCueBtn" class="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs sm:text-sm font-medium shadow-sm transition disabled:opacity-40">
+                <span>Mi turno</span> ▶
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE SUBIDA (EPUB / HTML / TEXTO) -->
+    <div id="uploadModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4 no-print">
+        <div class="surface-card border rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div>
+                    <h3 class="font-serif font-bold text-xl">Cargar Obra de Teatro</h3>
+                    <p class="text-xs text-muted-custom">Abre un archivo .epub, .html o pega el texto directamente</p>
+                </div>
+                <button id="closeUploadModalBtn" class="p-2 rounded-xl hover:bg-amber-500/10">✕</button>
+            </div>
+
+            <!-- Arrastre o selección -->
+            <div id="dropZone" class="border-2 border-dashed border-amber-700/40 hover:border-amber-600 rounded-2xl p-6 text-center cursor-pointer transition surface-panel">
+                <input type="file" id="fileInput" accept=".epub,.html,.htm,.txt,.xhtml" class="hidden">
+                <div class="text-3xl mb-2">📖</div>
+                <p class="font-semibold text-sm sm:text-base">Haz clic para elegir o arrastra aquí tu archivo <span class="text-amber-700 dark:text-amber-400 font-bold">.EPUB</span> o <span class="font-bold">.HTML</span></p>
+                <p class="text-xs text-muted-custom mt-1">Se procesa íntegramente en tu navegador sin enviar nada a servidores.</p>
+            </div>
+
+            <!-- Pegar texto -->
+            <div class="space-y-2">
+                <label for="pasteTextarea" class="text-xs font-semibold uppercase tracking-wider text-muted-custom block">O pega el texto / código HTML de la obra:</label>
+                <textarea id="pasteTextarea" rows="6" placeholder="ACTO PRIMERO
+ESCENA I
+Salen DON JUAN y CATALINÓN.
+
+DON JUAN. ¿Qué dices del suceso?
+CATALINÓN. ¡Vive Dios, que fue gran salto!
+(Mirando a la puerta.)" class="w-full rounded-2xl p-3 text-sm surface-panel border focus:outline-none focus:ring-1 focus:ring-amber-600 font-mono"></textarea>
+                <div class="flex justify-end pt-1">
+                    <button id="processPastedTextBtn" class="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs sm:text-sm font-semibold transition">
+                        Analizar libreto
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGRUPAR ABREVIATURAS -->
+    <div id="mergeModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4 no-print">
+        <div class="surface-card border rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="font-serif font-bold text-base sm:text-lg">Agrupar dos nombres</h3>
+                <button id="closeMergeModalBtn" class="p-1 rounded-lg hover:bg-amber-500/10">✕</button>
+            </div>
+            <p class="text-xs text-muted-custom">
+                Si una abreviatura (ej: <strong>D. JUAN</strong>) aparece separada de <strong>DON JUAN</strong>, únelas para que tengan el mismo color.
+            </p>
+            <div class="space-y-3 text-xs sm:text-sm">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Nombre abreviado o secundario:</label>
+                    <select id="mergeSourceSelect" class="w-full p-2 rounded-xl surface-panel border"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Unir en el personaje principal:</label>
+                    <select id="mergeTargetSelect" class="w-full p-2 rounded-xl surface-panel border"></select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="confirmMergeBtn" class="px-3.5 py-1.5 rounded-xl bg-amber-700 text-white text-xs sm:text-sm font-medium">Unir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICACIÓN -->
+    <div id="toastNotification" class="fixed top-20 right-4 z-50 hidden max-w-sm surface-card border border-amber-600 shadow-xl rounded-2xl px-4 py-2.5 text-xs sm:text-sm font-medium flex items-center gap-2 no-print">
+        <span id="toastIcon">✨</span>
+        <span id="toastMessage">Acción completada</span>
+    </div>
+
+    <script>
+        /***********************************************************************
+         * PALETA DE COLORES DISTINTOS PARA CADA PERSONAJE
+         ***********************************************************************/
+        const CHARACTER_PALETTE = [
+            { id: 'amber', name: 'Ámbar', dot: '#d97706', bgLight: 'rgba(245, 158, 11, 0.22)', borderLight: '#d97706', badgeBg: '#b45309', badgeText: '#ffffff' },
+            { id: 'emerald', name: 'Esmeralda', dot: '#059669', bgLight: 'rgba(16, 185, 129, 0.20)', borderLight: '#059669', badgeBg: '#047857', badgeText: '#ffffff' },
+            { id: 'sky', name: 'Celeste', dot: '#0284c7', bgLight: 'rgba(14, 165, 233, 0.20)', borderLight: '#0284c7', badgeBg: '#0369a1', badgeText: '#ffffff' },
+            { id: 'rose', name: 'Rosa', dot: '#e11d48', bgLight: 'rgba(244, 63, 94, 0.18)', borderLight: '#e11d48', badgeBg: '#be123c', badgeText: '#ffffff' },
+            { id: 'violet', name: 'Violeta', dot: '#7c3aed', bgLight: 'rgba(139, 92, 246, 0.20)', borderLight: '#7c3aed', badgeBg: '#6d28d9', badgeText: '#ffffff' },
+            { id: 'orange', name: 'Terracota', dot: '#ea580c', bgLight: 'rgba(249, 115, 22, 0.20)', borderLight: '#ea580c', badgeBg: '#c2410c', badgeText: '#ffffff' }
+        ];
+
+        /***********************************************************************
+         * TEXTOS DE MUESTRA ORIGINALES (En verso y prosa, con acotaciones y escenas)
+         ***********************************************************************/
+        const SAMPLE_TEXTS = {
+            muestra1: {
+                title: "La Noche del Desafío — Jornada I",
+                raw: `JORNADA PRIMERA
+Salón de una quinta antigua en Toledo. Noche serena.
+
+ESCENA I
+Salen DON FÉLIX con capa y espada, y TRISTÁN con farol.
+
+DON FÉLIX. Apaga ya esa luz, Tristán ladino,
+que la sombra en la noche es fiel testigo
+cuando el honor desafía su destino.
+TRISTÁN. (Temblando y mirando alrededor.)
+Señor, por Dios, parad aqueste bulto;
+que el rondar callejones sin abrigo
+más parece locura que deseo culto.
+DON FÉLIX. ¿Temes acaso el brillo de un acero?
+TRISTÁN. Temo quebrar la crisma en el regato,
+que yo de fiel criado soy sincero
+y vos de enamorado sois ingrato.
+(Óyense pasos precipitados dentro.)
+¡Santas benditas! Alguien cerca pasa.
+DON FÉLIX. Embozate, villano, y ten la calma.
+
+ESCENA II
+Salen DOÑA BEATRIZ con manto suelto, y CELIA apresurada; dichos.
+
+DOÑA BEATRIZ. ¡Celia, acude al postigo de la casa!
+¿No escuchaste una queja dolorida?
+CELIA. Viento que por los sauces se desliza,
+o gato montés que busca su comida.
+BEATRIZ. (Descubriendo el rostro a la luna.)
+¡Ay de mí, que el amor todo lo atiza!
+DON FÉLIX. (Llegándose a ella con cortesía.)
+Si suspiráis por culpa de mi huella,
+haced culpable al resplandor divino
+que roba prez y lauro a la más bella.
+DOÑA BEATRIZ. ¿Quién sois, audaz, que al despuntar la hora
+rompéis el cerco de mi estancia honrada?
+DON FÉLIX. Quien vuestro esclavo y siervo se corona.
+TRISTÁN. (Aparte a CELIA.)
+Ya cayó la dama en la celada.
+CELIA. (Aparte a TRISTÁN.)
+Calla, escudero lelo, o te doy coz.
+BEATRIZ. Caballero, volved a vuestro paso,
+que mi hermano don Rodrigo ronda el soto.
+DON FÉLIX. Aunque bajase Marte del Parnaso,
+de aquí no partiré con voto roto.
+
+ESCENA III
+Sale DON RODRIGO con la espada desenvainada; dichos.
+
+DON RODRIGO. ¡Traidor! ¿Aquesta mengua en mi heredad?
+BEATRIZ. ¡Hermano, detened la fiera espada!
+DON RODRIGO. ¡Morir habrás por tanta liviandad!
+DON FÉLIX. Defended vuestro pecho, si os agrada.
+(Pelean con fiereza y caen las antorchas.)`
+            },
+            muestra2: {
+                title: "Los Celos del Alférez — Acto Segundo",
+                raw: `ACTO SEGUNDO
+Jardín con reja y enredaderas.
+
+ESCENA PRIMERA
+Salen DON JUAN y CIUTTI.
+
+DON JUAN. ¿Llegó la esquela, fiel Ciutti?
+CIUTTI. En sus blancas manos di
+el papel que preparasteis.
+D. JUAN. ¿Y qué respuesta sacasteis?
+CIUTTI. (Riendo malicioso.)
+Dijo que os aguarda aquí.
+DON JUAN. Pues prevén la escala presta,
+que la noche es favorable.
+
+ESCENA SEGUNDA
+Sale INÉS a la reja; dichos.
+
+INÉS. ¿Sois vos quien murmura al pie?
+D. JUAN. Yo soy, luz de mi sentido.
+CIUTTI. (Aparte.)
+Buen principio ha convenido.
+INÉS. Huíd, que don Pedro fue
+hacia la ronda armado.
+JUAN. No temo al rigor del hado
+mientras viva vuestra fe.`
+            }
+        };
+
+        /***********************************************************************
+         * ESTADO DE LA APLICACIÓN
+         ***********************************************************************/
+        const state = {
+            playTitle: "La Noche del Desafío — Jornada I",
+            blocks: [],            // Bloques parseados: { id, type: 'heading'|'stage'|'speech', ... }
+            scenes: [],            // Índice de escenas: { id, title, act, charactersPresent: Set, charactersSpeaking: Set }
+            characters: {},        // canonicalName -> { name, aliases, count, lineCount, selected, colorIndex }
+            aliasToCanonical: {},  // alias -> canonical
+            cueAlertEnabled: true,
+            indentVerse: true,
+            fontSize: 20,
+            currentMyCueIndex: -1
+        };
+
+        /***********************************************************************
+         * ANALIZADOR Y DETECTOR DE PERSONAJES, ESCENAS Y ACOTACIONES
+         ***********************************************************************/
+
+        // Encabezados estructurales de la obra
+        const SCENE_KEYWORDS = /^(ACTO|JORNADA|ESCENA|CUADRO|PRÓLOGO|PROLOGO|EPÍLOGO|EPILOGO)\b/i;
+
+        // Palabras de acotación que NUNCA deben identificarse como personaje
+        const EXCLUDED_STAGE_TERMS = /^(APARTE|DENTRO|VÁNSE|VANSE|MUTIS|SALE|ENTRAN|ENTRA|VASE|TELÓN|TELON|PAUSA|SILENCIO|DESDE DENTRO|VOCES DENTRO|MÚSICA|MUSICA|CANTAN|CANTO|DICHOS|DICHAS)\b/i;
+
+        // Verbos típicos que introducen personajes en una escena
+        const STAGE_VERBS = /^(Salen|Sale|Entran|Entra|Vanse|Vase|Quedan|Descúbrese|Óyese|Aparece|Llegan)/i;
+
+        function cleanCharName(str) {
+            return str
+                .replace(/^[\s—\-–•*]+/, '')
+                .replace(/[\s.:;,\-—–]+$/, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toUpperCase();
+        }
+
+        function isValidCharacterCandidate(candidate) {
+            if (!candidate || candidate.length < 2 || candidate.length > 30) return false;
+            // NUNCA si tiene paréntesis o corchetes
+            if (/[()[\]{}]/.test(candidate)) return false;
+            // Excluir términos de escena o acotaciones
+            if (EXCLUDED_STAGE_TERMS.test(candidate)) return false;
+            if (SCENE_KEYWORDS.test(candidate)) return false;
+            // Evitar más de 4 palabras
+            if (candidate.split(/\s+/).length > 4) return false;
+            // Debe contener al menos 2 letras
+            if (!/[A-ZÁÉÍÓÚÑÜ]{2,}/.test(candidate)) return false;
+            // Descartar números romanos solos
+            if (/^[IVXLCDM]+$/.test(candidate)) return false;
+            return true;
+        }
+
+        /**
+         * Extrae los personajes citados en la acotación de entrada de escena
+         * Ej: "Salen DON FÉLIX con capa y espada, y TRISTÁN con farol." -> ["DON FÉLIX", "TRISTÁN"]
+         */
+        function extractCharactersFromEntrance(text) {
+            const found = new Set();
+            // Buscar palabras o secuencias en MAYÚSCULAS tras verbos de entrada
+            const regex = /\b([A-ZÁÉÍÓÚÑÜ]{2,}(?:\s+[A-ZÁÉÍÓÚÑÜ]{2,}){0,3})\b/g;
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                const cand = cleanCharName(match[1]);
+                if (isValidCharacterCandidate(cand) && !STAGE_VERBS.test(cand) && !/^(CON|SIN|POR|LOS|LAS|UNA|UNO|DEL|SUS|HACIA)$/i.test(cand)) {
+                    found.add(cand);
+                }
+            }
+            return Array.from(found);
+        }
+
+        function htmlToText(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            doc.querySelectorAll('script, style, nav, head').forEach(e => e.remove());
+
+            // Marcar <b> y <strong/> si representan personajes
+            doc.querySelectorAll('b, strong, .speaker, .personaje').forEach(el => {
+                const t = (el.textContent || '').trim();
+                if (t.length >= 2 && t.length <= 30 && !t.startsWith('(') && !EXCLUDED_STAGE_TERMS.test(t)) {
+                    const up = t.toUpperCase();
+                    el.textContent = /[.:]$/.test(up) ? up + ' ' : up + '. ';
+                }
+            });
+
+            doc.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+            const blocks = 'p, div, h1, h2, h3, h4, h5, h6, li, tr, blockquote, section, article';
+            doc.querySelectorAll(blocks).forEach(b => {
+                b.prepend(doc.createTextNode('\n'));
+                b.append(doc.createTextNode('\n'));
+            });
+
+            return (doc.body ? doc.body.textContent : html).replace(/\r\n/g, '\n').replace(/\u00A0/g, ' ');
+        }
+
+        function parseTheaterText(input, isHtml = false) {
+            const rawText = isHtml || /<\/?[a-z][\s\S]*>/i.test(input) ? htmlToText(input) : input.replace(/\r\n/g, '\n');
+            const lines = rawText.split('\n');
+            const blocks = [];
+            const scenes = [];
+            let currentSpeech = null;
+            let currentScene = null;
+            let currentActTitle = "Comienzo";
+
+            const flushSpeech = () => {
+                if (currentSpeech && currentSpeech.lines.length > 0) {
+                    blocks.push(currentSpeech);
+                    if (currentScene) {
+                        currentScene.charactersSpeaking.add(currentSpeech.character);
+                    }
+                }
+                currentSpeech = null;
+            };
+
+            const inlineCueRegex = /^([A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ0-9ªº.\s]{1,28}?)(?:\.|\:|\.\-|\.—|\s—)(?:\s+|$)(.*)$/;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // REGLA FUNDAMENTAL: Paréntesis o corchete al inicio = SIEMPRE acotación o aparte
+                if (line.startsWith('(') || line.startsWith('[')) {
+                    if (currentSpeech) {
+                        currentSpeech.lines.push({ text: line, isStage: true });
+                    } else {
+                        blocks.push({ id: 'block-' + blocks.length, type: 'stage', text: line });
+                    }
+                    continue;
+                }
+
+                // Acotación explícita (APARTE, DENTRO, MUTIS...)
+                if (EXCLUDED_STAGE_TERMS.test(line)) {
+                    if (currentSpeech) {
+                        currentSpeech.lines.push({ text: `(${line})`, isStage: true });
+                    } else {
+                        blocks.push({ id: 'block-' + blocks.length, type: 'stage', text: line });
+                    }
+                    continue;
+                }
+
+                // Encabezados de Acto / Jornada / Escena / Cuadro
+                if (SCENE_KEYWORDS.test(line) && line.length < 80) {
+                    flushSpeech();
+                    const isAct = /^(ACTO|JORNADA|CUADRO|PRÓLOGO)/i.test(line);
+                    if (isAct) currentActTitle = line;
+
+                    const blockId = 'scene-' + blocks.length;
+                    const sceneObj = {
+                        id: blockId,
+                        title: line,
+                        act: currentActTitle,
+                        charactersPresent: new Set(),
+                        charactersSpeaking: new Set()
+                    };
+                    scenes.push(sceneObj);
+                    currentScene = sceneObj;
+
+                    blocks.push({
+                        id: blockId,
+                        type: 'heading',
+                        text: line,
+                        isAct: isAct
+                    });
+                    continue;
+                }
+
+                // Acotaciones de entrada de personajes (ej: "Salen DON JUAN y CIUTTI...")
+                if (STAGE_VERBS.test(line) && !/^[A-ZÁÉÍÓÚÑÜ\s]{3,25}[.:]/.test(line)) {
+                    flushSpeech();
+                    // Extraer qué personajes aparecen al inicio de la escena
+                    if (currentScene) {
+                        const entrants = extractCharactersFromEntrance(line);
+                        entrants.forEach(c => currentScene.charactersPresent.add(c));
+                    }
+                    blocks.push({ id: 'block-' + blocks.length, type: 'stage', text: line, isEntrance: true });
+                    continue;
+                }
+
+                // Detección de inicio de parlamento (Nombre en mayúsculas seguido de punto o dos puntos)
+                let matchedChar = null;
+                let speechRest = '';
+
+                const match = line.match(inlineCueRegex);
+                if (match) {
+                    const cand = cleanCharName(match[1]);
+                    if (isValidCharacterCandidate(cand)) {
+                        matchedChar = cand;
+                        speechRest = match[2].trim();
+                    }
+                }
+
+                // Línea sola en mayúsculas representando al personaje
+                if (!matchedChar && line === line.toUpperCase() && line.length >= 2 && line.length <= 28) {
+                    if (!/[¡!¿?()[\]]/.test(line)) {
+                        const cand = cleanCharName(line);
+                        if (isValidCharacterCandidate(cand)) {
+                            matchedChar = cand;
+                            speechRest = '';
+                        }
+                    }
+                }
+
+                if (matchedChar) {
+                    flushSpeech();
+                    currentSpeech = {
+                        id: 'speech-' + blocks.length,
+                        type: 'speech',
+                        rawCharacter: matchedChar,
+                        character: matchedChar,
+                        lines: []
+                    };
+                    if (speechRest) {
+                        currentSpeech.lines.push({ text: speechRest, isStage: speechRest.startsWith('(') });
+                    }
+                    continue;
+                }
+
+                // Línea de diálogo o verso continuo
+                if (currentSpeech) {
+                    currentSpeech.lines.push({ text: line, isStage: line.startsWith('(') });
+                } else {
+                    blocks.push({ id: 'block-' + blocks.length, type: 'stage', text: line });
+                }
+            }
+
+            flushSpeech();
+            state.scenes = scenes;
+            return blocks;
+        }
+
+        function buildCharacterRegistry(blocks, preserve = false) {
+            const prev = preserve ? { ...state.characters } : {};
+            const newChars = {};
+            const aliasMap = preserve ? { ...state.aliasToCanonical } : {};
+
+            blocks.forEach(b => {
+                if (b.type !== 'speech') return;
+                const raw = b.rawCharacter;
+                const canonical = aliasMap[raw] || raw;
+                b.character = canonical;
+
+                if (!newChars[canonical]) {
+                    const p = prev[canonical];
+                    newChars[canonical] = {
+                        name: canonical,
+                        aliases: p ? new Set(p.aliases) : new Set([canonical]),
+                        count: 0,
+                        lineCount: 0,
+                        selected: p ? p.selected : false,
+                        colorIndex: p ? p.colorIndex : 0
+                    };
+                }
+                newChars[canonical].aliases.add(raw);
+                newChars[canonical].count += 1;
+                newChars[canonical].lineCount += Math.max(1, b.lines.length);
+            });
+
+            // Asignar colores por defecto
+            const sorted = Object.keys(newChars).sort((a, b) => newChars[b].count - newChars[a].count);
+            sorted.forEach((name, idx) => {
+                if (!prev[name]) {
+                    newChars[name].colorIndex = idx % CHARACTER_PALETTE.length;
+                }
+            });
+
+            state.characters = newChars;
+            state.aliasToCanonical = aliasMap;
+        }
+
+        function autoMergeAbbreviations(silent = false) {
+            const names = Object.keys(state.characters);
+            let merged = 0;
+            const sorted = [...names].sort((a, b) => b.length - a.length);
+
+            for (const shortName of names) {
+                if (!state.characters[shortName]) continue;
+                const cleanShort = shortName.replace(/^(DON|DOÑA|D\.|Dª\.|EL|LA)\s+/i, '').replace(/\.$/, '').trim();
+
+                for (const fullName of sorted) {
+                    if (shortName === fullName || !state.characters[fullName]) continue;
+                    const cleanFull = fullName.replace(/^(DON|DOÑA|D\.|Dª\.|EL|LA)\s+/i, '').trim();
+
+                    const isTitleVar = (cleanShort === cleanFull && fullName.length > shortName.length);
+                    const isPrefixAbbr = (shortName.endsWith('.') && cleanFull.startsWith(cleanShort) && cleanShort.length >= 3);
+                    const isWordMatch = (fullName.split(/\s+/).includes(shortName) && /^(DON|DOÑA|CAPITÁN|REY)/.test(fullName));
+
+                    if (isTitleVar || isPrefixAbbr || isWordMatch) {
+                        mergeTwoCharacters(shortName, fullName);
+                        merged++;
+                        break;
+                    }
+                }
+            }
+
+            if (!silent) {
+                showToast(merged > 0 ? `🔗 Se unieron ${merged} abreviatura(s).` : `ℹ️ No se detectaron más abreviaturas.`);
+            }
+        }
+
+        function mergeTwoCharacters(source, target) {
+            if (!source || !target || source === target) return;
+            const src = state.characters[source];
+            const tgt = state.characters[target];
+            if (!src || !tgt) return;
+
+            src.aliases.forEach(a => {
+                state.aliasToCanonical[a] = target;
+                tgt.aliases.add(a);
+            });
+            state.aliasToCanonical[source] = target;
+            tgt.aliases.add(source);
+
+            buildCharacterRegistry(state.blocks, true);
+            renderAll();
+        }
+
+        /***********************************************************************
+         * RENDERIZADO: ÍNDICE DE ESCENAS, REPARTO Y TEXTO
+         ***********************************************************************/
+
+        function formatInlineDirections(text) {
+            const esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return esc.replace(/(\([^)]+\)|\[[^\]]+\])/g, '<span class="stage-direction">$1</span>');
+        }
+
+        function renderToc() {
+            const tocList = document.getElementById('tocList');
+            if (!state.scenes || state.scenes.length === 0) {
+                tocList.innerHTML = `<div class="p-6 text-center text-xs text-muted-custom">No se detectaron divisiones de escenas en el texto.</div>`;
+                return;
+            }
+
+            tocList.innerHTML = state.scenes.map((scene, idx) => {
+                // Combinar personajes que entran y que hablan
+                const allSceneChars = new Set([...scene.charactersPresent, ...scene.charactersSpeaking]);
+                const charPills = Array.from(allSceneChars).map(chName => {
+                    const canonical = state.aliasToCanonical[chName] || chName;
+                    const charObj = state.characters[canonical];
+                    const isMine = charObj && charObj.selected;
+                    const palette = charObj ? CHARACTER_PALETTE[charObj.colorIndex % CHARACTER_PALETTE.length] : null;
+
+                    return `
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block ${isMine ? 'font-bold ring-1 ring-amber-600' : 'opacity-80'}"
+                              style="${isMine && palette ? `background-color: ${palette.badgeBg}; color: ${palette.badgeText};` : 'background: rgba(120,110,95,0.15);'}">
+                            ${isMine ? '⭐ ' : ''}${canonical}
+                        </span>
+                    `;
+                }).join(' ');
+
+                return `
+                    <div class="p-3 rounded-2xl surface-panel border hover:border-amber-600 transition flex items-start justify-between gap-3 cursor-pointer toc-item"
+                         data-target="${scene.id}">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">${scene.act}</span>
+                            <div class="font-serif font-bold text-sm sm:text-base">${scene.title}</div>
+                            <div class="flex flex-wrap gap-1 mt-1.5">
+                                ${charPills || '<span class="text-[10px] text-muted-custom italic">Sin nombres especificados al inicio</span>'}
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-xl bg-amber-700/10 text-amber-800 dark:text-amber-300 shrink-0">
+                            Ir ➔
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            tocList.querySelectorAll('.toc-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        document.getElementById('tocModal').classList.add('hidden');
+                        document.getElementById('tocModal').classList.remove('flex');
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        targetEl.classList.add('active-jump-target');
+                        setTimeout(() => targetEl.classList.remove('active-jump-target'), 2000);
+                    }
+                });
+            });
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('characterListContainer');
+            const badge = document.getElementById('selectedCountBadge');
+            const charArray = Object.values(state.characters).sort((a, b) => b.count - a.count);
+            const selected = charArray.filter(c => c.selected);
+            badge.textContent = selected.length;
+
+            if (charArray.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-xs text-muted-custom">No se detectaron personajes. Puedes añadir uno abajo.</div>`;
+                return;
+            }
+
+            container.innerHTML = charArray.map(c => {
+                const pal = CHARACTER_PALETTE[c.colorIndex % CHARACTER_PALETTE.length];
+                const aliases = Array.from(c.aliases).filter(a => a !== c.name);
+                const aliasHtml = aliases.length > 0 ? `<div class="text-[10px] text-muted-custom truncate">Alias: ${aliases.join(', ')}</div>` : '';
+
+                return `
+                <div class="rounded-2xl surface-card border p-2.5 transition ${c.selected ? 'ring-2 ring-amber-600 shadow-sm' : 'hover:border-amber-700/40'}"
+                     style="${c.selected ? `background-color: ${pal.bgLight}; border-color: ${pal.borderLight};` : ''}">
+                    <div class="flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer select-none">
+                            <input type="checkbox" data-char="${c.name}" class="char-cb w-4 h-4 rounded accent-amber-700 shrink-0" ${c.selected ? 'checked' : ''}>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-bold text-xs sm:text-sm truncate flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${pal.dot}"></span>
+                                    <span class="truncate">${c.name}</span>
+                                </div>
+                                ${aliasHtml}
+                            </div>
+                        </label>
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full surface-panel border shrink-0">
+                            ${c.count} parl.
+                        </span>
+                    </div>
+
+                    ${c.selected ? `
+                    <div class="mt-2 pt-1.5 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
+                        <span class="text-[10px] font-medium text-muted-custom">Color:</span>
+                        <div class="flex items-center gap-1">
+                            ${CHARACTER_PALETTE.map((p, idx) => `
+                                <button type="button" data-char="${c.name}" data-color="${idx}"
+                                    class="color-btn w-4 h-4 rounded-full transition transform ${c.colorIndex === idx ? 'scale-125 ring-2 ring-stone-800 dark:ring-white' : 'opacity-70 hover:opacity-100'}"
+                                    style="background-color: ${p.dot}"></button>
+                            `).join('')}
+                        </div>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+
+            container.querySelectorAll('.char-cb').forEach(cb => {
+                cb.addEventListener('change', e => {
+                    const name = e.target.getAttribute('data-char');
+                    if (state.characters[name]) {
+                        state.characters[name].selected = e.target.checked;
+                        state.currentMyCueIndex = -1;
+                        renderAll();
+                    }
+                });
+            });
+
+            container.querySelectorAll('.color-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const name = e.currentTarget.getAttribute('data-char');
+                    const cIdx = parseInt(e.currentTarget.getAttribute('data-color'), 10);
+                    if (state.characters[name]) {
+                        state.characters[name].colorIndex = cIdx;
+                        renderAll();
+                    }
+                });
+            });
+        }
+
+        function renderScript() {
+            const container = document.getElementById('scriptContainer');
+            const activePills = document.getElementById('activeRolesPills');
+            const statsSummary = document.getElementById('statsSummaryText');
+            const selectedChars = Object.values(state.characters).filter(c => c.selected);
+
+            if (selectedChars.length === 0) {
+                activePills.innerHTML = `<span class="text-xs text-muted-custom italic">👈 Selecciona tus papeles en el panel de Reparto.</span>`;
+                const totalInterv = state.blocks.filter(b => b.type === 'speech').length;
+                statsSummary.textContent = `${totalInterv} intervenciones`;
+            } else {
+                activePills.innerHTML = selectedChars.map(c => {
+                    const pal = CHARACTER_PALETTE[c.colorIndex % CHARACTER_PALETTE.length];
+                    return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm" style="background-color: ${pal.badgeBg}; color: ${pal.badgeText}">
+                        <span>🎭 ${c.name}</span>
+                        <span class="opacity-80 font-normal">(${c.count})</span>
+                    </span>`;
+                }).join('');
+                const myTotal = selectedChars.reduce((acc, c) => acc + c.count, 0);
+                statsSummary.textContent = `Tienes ${myTotal} turnos`;
+            }
+
+            // Mapeo de pie de entrada (bloque inmediatamente previo al mío)
+            const cueMap = {};
+            if (state.cueAlertEnabled && selectedChars.length > 0) {
+                let lastSpeech = null;
+                for (const block of state.blocks) {
+                    if (block.type === 'speech') {
+                        const charObj = state.characters[block.character];
+                        const isMine = charObj && charObj.selected;
+                        if (isMine && lastSpeech) {
+                            const prevCharObj = state.characters[lastSpeech.character];
+                            const prevIsMine = prevCharObj && prevCharObj.selected;
+                            if (!prevIsMine) {
+                                cueMap[lastSpeech.id] = block.character;
+                            }
+                        }
+                        lastSpeech = block;
+                    }
+                }
+            }
+
+            let myTurnCounter = 0;
+
+            const htmlBlocks = state.blocks.map(b => {
+                if (b.type === 'heading') {
+                    return `
+                        <div id="${b.id}" class="${b.isAct ? 'mt-10 mb-5 pt-6 border-t-2 border-amber-800/20 text-center' : 'mt-7 mb-3 text-center'}">
+                            <h2 class="font-serif font-bold uppercase tracking-wider ${b.isAct ? 'text-2xl sm:text-3xl text-amber-800 dark:text-amber-400' : 'text-lg sm:text-xl opacity-90'}">
+                                ${b.text}
+                            </h2>
+                        </div>
+                    `;
+                }
+
+                if (b.type === 'stage') {
+                    return `
+                        <div class="my-2.5 px-4 text-center stage-direction text-base ${b.isEntrance ? 'font-medium' : ''}">
+                            ${b.text}
+                        </div>
+                    `;
+                }
+
+                if (b.type === 'speech') {
+                    const charObj = state.characters[b.character];
+                    const isMine = charObj && charObj.selected;
+                    const pal = charObj ? CHARACTER_PALETTE[charObj.colorIndex % CHARACTER_PALETTE.length] : CHARACTER_PALETTE[0];
+                    const nextMyRole = cueMap[b.id];
+
+                    let turnBadge = '';
+                    let myTurnAttr = '';
+                    if (isMine) {
+                        myTurnCounter++;
+                        myTurnAttr = `data-my-turn="${myTurnCounter}"`;
+                        turnBadge = `<span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full" style="background-color: ${pal.badgeBg}; color: ${pal.badgeText}">Turno #${myTurnCounter}</span>`;
+                    }
+
+                    const linesHtml = b.lines.map((l, idx) => {
+                        const isLastCueLine = Boolean(nextMyRole && idx === b.lines.length - 1);
+                        if (l.isStage) {
+                            return `<div class="stage-direction my-0.5">${formatInlineDirections(l.text)}</div>`;
+                        }
+                        return `
+                            <div class="${state.indentVerse ? 'pl-2 sm:pl-6' : ''} ${isLastCueLine ? 'underline decoration-amber-600 decoration-wavy underline-offset-4 font-semibold' : ''}">
+                                ${formatInlineDirections(l.text)}
+                            </div>
+                        `;
+                    }).join('');
+
+                    const cueAlertHtml = nextMyRole ? `
+                        <div class="mt-2 pt-1 border-t border-dashed border-amber-600/50 flex items-center justify-between text-xs font-sans text-amber-800 dark:text-amber-300 font-semibold">
+                            <span>⚡ ¡Atento al pie! Entras ahora como ${nextMyRole}</span>
+                            <span class="text-[10px] opacity-75">Siguiente línea ↓</span>
+                        </div>
+                    ` : '';
+
+                    const style = isMine
+                        ? `background-color: ${pal.bgLight}; border-left: 5px solid ${pal.borderLight};`
+                        : (nextMyRole ? `border-left: 3px dashed #d97706; background-color: rgba(217, 119, 6, 0.05);` : '');
+
+                    return `
+                        <section id="${b.id}" ${myTurnAttr}
+                            class="speech-block my-3 rounded-2xl px-4 py-2.5 transition ${isMine ? 'my-speech shadow-sm' : ''} ${nextMyRole ? 'cue-speech' : ''}"
+                            style="${style}">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-sans font-bold text-xs sm:text-sm tracking-wide uppercase" style="${isMine ? `color: ${pal.borderLight};` : ''}">
+                                    ${b.character}${b.rawCharacter !== b.character ? ` <span class="font-normal opacity-60 text-[10px]">(${b.rawCharacter})</span>` : ''}
+                                </span>
+                                ${turnBadge}
+                            </div>
+                            <div class="space-y-0.5">
+                                ${linesHtml}
+                            </div>
+                            ${cueAlertHtml}
+                        </section>
+                    `;
+                }
+                return '';
+            });
+
+            container.innerHTML = `
+                <header class="text-center mb-8 pb-5 border-b border-amber-900/15">
+                    <p class="font-sans text-[11px] uppercase tracking-widest text-muted-custom mb-1">Lectura Dramatizada</p>
+                    <h1 class="font-serif font-bold text-2xl sm:text-4xl">${state.playTitle}</h1>
+                </header>
+                ${htmlBlocks.join('')}
+            `;
+
+            updateFloatingNav();
+        }
+
+        function updateFloatingNav() {
+            const myTurnElements = document.querySelectorAll('[data-my-turn]');
+            const total = myTurnElements.length;
+            const prevBtn = document.getElementById('prevCueBtn');
+            const nextBtn = document.getElementById('nextCueBtn');
+            const progress = document.getElementById('navProgressText');
+            const hint = document.getElementById('navNextSpeakerHint');
+
+            if (total === 0) {
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                progress.textContent = "Sin personajes seleccionados";
+                hint.textContent = "Marca tu papel en el menú lateral";
+                return;
+            }
+
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
+            const current = state.currentMyCueIndex >= 0 ? state.currentMyCueIndex + 1 : 0;
+            progress.textContent = current > 0 ? `Turno ${current} de ${total}` : `${total} turnos asignados`;
+            hint.textContent = "Pulsa «Mi turno» para avanzar";
+        }
+
+        function jumpToMyTurn(dir) {
+            const myTurnElements = Array.from(document.querySelectorAll('[data-my-turn]'));
+            if (myTurnElements.length === 0) return;
+
+            if (dir === 'next') {
+                state.currentMyCueIndex = (state.currentMyCueIndex + 1) % myTurnElements.length;
+            } else {
+                state.currentMyCueIndex = state.currentMyCueIndex <= 0 ? myTurnElements.length - 1 : state.currentMyCueIndex - 1;
+            }
+
+            const el = myTurnElements[state.currentMyCueIndex];
+            if (el) {
+                document.querySelectorAll('.active-jump-target').forEach(e => e.classList.remove('active-jump-target'));
+                el.classList.add('active-jump-target');
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                updateFloatingNav();
+            }
+        }
+
+        function renderAll() {
+            renderSidebar();
+            renderToc();
+            renderScript();
+        }
+
+        /***********************************************************************
+         * MANEJO DE ARCHIVOS (EPUB / HTML / TXT)
+         ***********************************************************************/
+        async function handleFile(file) {
+            if (!file) return;
+            const name = file.name.toLowerCase();
+
+            try {
+                if (name.endsWith('.epub')) {
+                    showToast('⏳ Descomprimiendo EPUB...');
+                    const zip = await JSZip.loadAsync(file);
+
+                    let opfPath = null;
+                    const containerFile = zip.file('META-INF/container.xml');
+                    if (containerFile) {
+                        const xml = await containerFile.async('string');
+                        const doc = new DOMParser().parseFromString(xml, 'application/xml');
+                        const rf = doc.querySelector('rootfile');
+                        if (rf) opfPath = rf.getAttribute('full-path');
+                    }
+
+                    if (!opfPath) {
+                        const opfs = Object.keys(zip.files).filter(k => k.toLowerCase().endsWith('.opf'));
+                        if (opfs.length > 0) opfPath = opfs[0];
+                    }
+
+                    let orderedFiles = [];
+                    let bookTitle = file.name.replace(/\.epub$/i, '');
+
+                    if (opfPath && zip.file(opfPath)) {
+                        const opfContent = await zip.file(opfPath).async('string');
+                        const opfDoc = new DOMParser().parseFromString(opfContent, 'application/xml');
+                        const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+
+                        const tEl = opfDoc.querySelector('title, dc\\:title');
+                        if (tEl && tEl.textContent) bookTitle = tEl.textContent.trim();
+
+                        const manifest = {};
+                        opfDoc.querySelectorAll('manifest > item').forEach(it => {
+                            manifest[it.getAttribute('id')] = opfDir + it.getAttribute('href');
+                        });
+
+                        opfDoc.querySelectorAll('spine > itemref').forEach(ref => {
+                            const id = ref.getAttribute('idref');
+                            if (manifest[id]) orderedFiles.push(manifest[id]);
+                        });
+                    }
+
+                    if (orderedFiles.length === 0) {
+                        orderedFiles = Object.keys(zip.files).filter(k => /\.(xhtml|html|htm)$/i.test(k) && !k.includes('toc')).sort();
+                    }
+
+                    const parts = [];
+                    for (const p of orderedFiles) {
+                        const clean = decodeURIComponent(p);
+                        const zf = zip.file(clean) || zip.file(p);
+                        if (zf) {
+                            const text = await zf.async('string');
+                            if (text.replace(/<[^>]+>/g, '').trim().length > 60) {
+                                parts.push(text);
+                            }
+                        }
+                    }
+
+                    if (parts.length === 0) {
+                        showToast('⚠️ No se encontró texto legible en el EPUB.');
+                        return;
+                    }
+
+                    loadContent(bookTitle, parts.join('\n<hr/>\n'), true);
+                    document.getElementById('uploadModal').classList.add('hidden');
+                    document.getElementById('uploadModal').classList.remove('flex');
+                    showToast(`📖 «${bookTitle}» cargado.`);
+                } else {
+                    const text = await file.text();
+                    const isHtml = /\.(html|htm|xhtml)$/i.test(name);
+                    const title = file.name.replace(/\.(html|htm|txt|xhtml)$/i, '');
+                    loadContent(title, text, isHtml);
+                    document.getElementById('uploadModal').classList.add('hidden');
+                    document.getElementById('uploadModal').classList.remove('flex');
+                    showToast(`📄 «${title}» cargado.`);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('⚠️ Error al leer el archivo.');
+            }
+        }
+
+        function loadContent(title, content, isHtml = false) {
+            state.playTitle = title;
+            document.getElementById('currentPlaySubtitle').textContent = title;
+            state.blocks = parseTheaterText(content, isHtml);
+            state.aliasToCanonical = {};
+            state.characters = {};
+            buildCharacterRegistry(state.blocks, false);
+            autoMergeAbbreviations(true);
+
+            // Preseleccionar el primer personaje para prueba inmediata
+            const sorted = Object.values(state.characters).sort((a, b) => b.count - a.count);
+            if (sorted.length > 0) sorted[0].selected = true;
+
+            state.currentMyCueIndex = -1;
+            renderAll();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
+
+        function downloadCurrentApp() {
+            const html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('💾 index.html descargado.');
+        }
+
+        /***********************************************************************
+         * INICIALIZACIÓN Y EVENTOS
+         ***********************************************************************/
+        window.addEventListener('DOMContentLoaded', () => {
+            // Muestra inicial
+            loadContent(SAMPLE_TEXTS.muestra1.title, SAMPLE_TEXTS.muestra1.raw, false);
+
+            // Selector de muestras
+            document.getElementById('sampleSelect').addEventListener('change', e => {
+                const s = SAMPLE_TEXTS[e.target.value];
+                if (s) loadContent(s.title, s.raw, false);
+            });
+
+            // Menú lateral móvil
+            const sidebar = document.getElementById('characterSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const toggleSidebar = () => {
+                const isClosed = sidebar.classList.contains('-translate-x-full');
+                sidebar.classList.toggle('-translate-x-full', !isClosed);
+                backdrop.classList.toggle('hidden', !isClosed);
+            };
+            document.getElementById('toggleSidebarBtn').addEventListener('click', toggleSidebar);
+            backdrop.addEventListener('click', toggleSidebar);
+
+            // Modal de Índice
+            const tocModal = document.getElementById('tocModal');
+            document.getElementById('toggleTocBtn').addEventListener('click', () => {
+                tocModal.classList.remove('hidden');
+                tocModal.classList.add('flex');
+            });
+            document.getElementById('closeTocBtn').addEventListener('click', () => {
+                tocModal.classList.add('hidden');
+                tocModal.classList.remove('flex');
+            });
+
+            // Ajustes
+            document.getElementById('toggleSettingsBtn').addEventListener('click', () => {
+                document.getElementById('settingsDrawer').classList.toggle('hidden');
+            });
+
+            // Temas
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const theme = e.currentTarget.getAttribute('data-theme');
+                    document.body.classList.remove('theme-light', 'theme-dark', 'dark');
+                    if (theme === 'light') document.body.classList.add('theme-light');
+                    if (theme === 'dark') document.body.classList.add('theme-dark', 'dark');
+
+                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('bg-amber-700', 'text-white'));
+                    e.currentTarget.classList.add('bg-amber-700', 'text-white');
+                });
+            });
+
+            // Tamaño fuente
+            const changeFontSize = delta => {
+                state.fontSize = Math.min(32, Math.max(15, state.fontSize + delta));
+                document.getElementById('scriptContainer').style.fontSize = `${state.fontSize}px`;
+                document.getElementById('fontSizeLabel').textContent = `${state.fontSize}px`;
+            };
+            document.getElementById('fontDecreaseBtn').addEventListener('click', () => changeFontSize(-2));
+            document.getElementById('fontIncreaseBtn').addEventListener('click', () => changeFontSize(2));
+
+            // Toggles
+            document.getElementById('indentVerseToggle').addEventListener('change', e => {
+                state.indentVerse = e.target.checked;
+                renderScript();
+            });
+            document.getElementById('dimAcotacionesToggle').addEventListener('change', e => {
+                document.body.classList.toggle('dim-acotaciones', e.target.checked);
+            });
+            document.getElementById('focusMyLinesToggle').addEventListener('change', e => {
+                document.body.classList.toggle('focus-my-lines', e.target.checked);
+            });
+            document.getElementById('cueAlertToggle').addEventListener('change', e => {
+                state.cueAlertEnabled = e.target.checked;
+                renderScript();
+            });
+
+            // Limpiar selección
+            document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+                Object.values(state.characters).forEach(c => c.selected = false);
+                state.currentMyCueIndex = -1;
+                renderAll();
+            });
+
+            // Auto-unir abreviaturas
+            document.getElementById('autoMergeAbbrBtn').addEventListener('click', () => autoMergeAbbreviations(false));
+
+            // Modal agrupar
+            const mergeModal = document.getElementById('mergeModal');
+            document.getElementById('openMergeModalBtn').addEventListener('click', () => {
+                const names = Object.keys(state.characters).sort();
+                if (names.length < 2) {
+                    showToast('ℹ️ Se requieren al menos dos personajes.');
+                    return;
+                }
+                const src = document.getElementById('mergeSourceSelect');
+                const tgt = document.getElementById('mergeTargetSelect');
+                src.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
+                tgt.innerHTML = names.map((n, i) => `<option value="${n}" ${i === 1 ? 'selected' : ''}>${n}</option>`).join('');
+                mergeModal.classList.remove('hidden');
+                mergeModal.classList.add('flex');
+            });
+            document.getElementById('closeMergeModalBtn').addEventListener('click', () => {
+                mergeModal.classList.add('hidden');
+                mergeModal.classList.remove('flex');
+            });
+            document.getElementById('confirmMergeBtn').addEventListener('click', () => {
+                const s = document.getElementById('mergeSourceSelect').value;
+                const t = document.getElementById('mergeTargetSelect').value;
+                if (s && t && s !== t) {
+                    mergeTwoCharacters(s, t);
+                    mergeModal.classList.add('hidden');
+                    mergeModal.classList.remove('flex');
+                    showToast(`🔗 «${s}» unido a «${t}».`);
+                }
+            });
+
+            // Añadir personaje manual
+            document.getElementById('addCustomCharForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const inp = document.getElementById('customCharInput');
+                const name = cleanCharName(inp.value);
+                if (!name) return;
+                if (!state.characters[name]) {
+                    state.characters[name] = {
+                        name,
+                        aliases: new Set([name]),
+                        count: 0,
+                        lineCount: 0,
+                        selected: true,
+                        colorIndex: Object.keys(state.characters).length % CHARACTER_PALETTE.length
+                    };
+                } else {
+                    state.characters[name].selected = true;
+                }
+                inp.value = '';
+                renderAll();
+                showToast(`🎭 «${name}» añadido.`);
+            });
+
+            // Navegación de turnos
+            document.getElementById('prevCueBtn').addEventListener('click', () => jumpToMyTurn('prev'));
+            document.getElementById('nextCueBtn').addEventListener('click', () => jumpToMyTurn('next'));
+
+            // Subida de archivos
+            const uploadModal = document.getElementById('uploadModal');
+            document.getElementById('openUploadModalBtn').addEventListener('click', () => {
+                uploadModal.classList.remove('hidden');
+                uploadModal.classList.add('flex');
+            });
+            document.getElementById('closeUploadModalBtn').addEventListener('click', () => {
+                uploadModal.classList.add('hidden');
+                uploadModal.classList.remove('flex');
+            });
+
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', e => {
+                if (e.target.files.length > 0) handleFile(e.target.files[0]);
+            });
+            dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('ring-2', 'ring-amber-600'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('ring-2', 'ring-amber-600'));
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropZone.classList.remove('ring-2', 'ring-amber-600');
+                if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+            });
+
+            // Pegar texto
+            document.getElementById('processPastedTextBtn').addEventListener('click', () => {
+                const raw = document.getElementById('pasteTextarea').value.trim();
+                if (!raw) {
+                    showToast('⚠️ Pega primero algún texto.');
+                    return;
+                }
+                loadContent('Obra Pegada', raw, /<\/?[a-z][\s\S]*>/i.test(raw));
+                uploadModal.classList.add('hidden');
+                uploadModal.classList.remove('flex');
+                showToast('✨ Libreto analizado.');
+            });
+
+            // Descargar código index.html
+            document.getElementById('downloadAppBtn').addEventListener('click', downloadCurrentApp);
+        });
+    </script>
+
+</body></html>
