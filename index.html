@@ -568,20 +568,32 @@ mientras viva vuestra fe.`
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Eliminar elementos prescindibles y números de línea/folio en HTML (habituales en Cervantes Virtual)
-            doc.querySelectorAll('script, style, nav, head, .nota, .folio, .nfolio, .versenum, span[class*="line"]').forEach(e => e.remove());
+            // Eliminar scripts, estilos, metadatos y números de verso o folio explícitos
+            doc.querySelectorAll('script, style, nav, head, .nota, .footnote, .folio, .nfolio, .versenum, .line-number, .linenum').forEach(e => e.remove());
 
-            // Marcar nombres de personajes en negrita o clase específica
-            doc.querySelectorAll('b, strong, .speaker, .personaje').forEach(el => {
-                const t = (el.textContent || '').trim();
-                if (t.length >= 2 && t.length <= 30 && !t.startsWith('(') && !EXCLUDED_STAGE_TERMS.test(t)) {
-                    const up = t.toUpperCase();
-                    el.textContent = /[.:]$/.test(up) ? up + ' ' : up + '. ';
+            // Identificar y asegurar acotaciones en cursiva o clases típicas de EPUB para que no se confundan con personajes
+            doc.querySelectorAll('i, em, .stage, .acotacion, .direction, .stage-direction').forEach(el => {
+                const txt = (el.textContent || '').trim();
+                if (txt && !txt.startsWith('(')) {
+                    el.textContent = ` (${txt}) `;
                 }
             });
 
+            // Normalizar etiquetas de personajes comunes en EPUBs (speaker, dramatis, bold, dt, etc.)
+            doc.querySelectorAll('dt, .speaker, .personaje, .character, .sp, b, strong').forEach(el => {
+                const t = (el.textContent || '').trim();
+                // Si parece un nombre de personaje teatral
+                if (t.length >= 2 && t.length <= 32 && !t.startsWith('(') && !EXCLUDED_STAGE_TERMS.test(t) && !SCENE_KEYWORDS.test(t)) {
+                    if (/[A-ZÁÉÍÓÚÑÜ]{2,}/.test(t)) {
+                        const up = cleanCharName(t);
+                        el.textContent = '\n' + up + '. ';
+                    }
+                }
+            });
+
+            // Reemplazar saltos de línea y formatear bloques de verso/párrafo
             doc.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
-            const blocks = 'p, div, h1, h2, h3, h4, h5, h6, li, tr, blockquote, section, article';
+            const blocks = 'p, div, h1, h2, h3, h4, h5, h6, li, tr, dd, blockquote, section, article';
             doc.querySelectorAll(blocks).forEach(b => {
                 b.prepend(doc.createTextNode('\n'));
                 b.append(doc.createTextNode('\n'));
@@ -1180,21 +1192,46 @@ mientras viva vuestra fe.`
         /***********************************************************************
          * MANEJO DE ARCHIVOS (EPUB / HTML / TXT)
          ***********************************************************************/
+        function resolveZipPath(baseDir, relativePath) {
+            // Resuelve rutas tipo "OEBPS/text/../part1.xhtml" dentro de los zips
+            relativePath = decodeURIComponent((relativePath || '').split('#')[0]);
+            const full = (baseDir ? baseDir + '/' : '') + relativePath;
+            const segments = full.replace(/\\/g, '/').split('/');
+            const resolved = [];
+            for (const seg of segments) {
+                if (!seg || seg === '.') continue;
+                if (seg === '..') {
+                    resolved.pop();
+                } else {
+                    resolved.push(seg);
+                }
+            }
+            return resolved.join('/');
+        }
+
+        function findZipFile(zip, targetPath) {
+            if (zip.file(targetPath)) return zip.file(targetPath);
+            const lowerTarget = targetPath.toLowerCase();
+            const foundKey = Object.keys(zip.files).find(k => k.toLowerCase() === lowerTarget);
+            return foundKey ? zip.file(foundKey) : null;
+        }
+
         async function handleFile(file) {
             if (!file) return;
             const name = file.name.toLowerCase();
 
             try {
                 if (name.endsWith('.epub')) {
-                    showToast('⏳ Descomprimiendo EPUB...');
+                    showToast('⏳ Descomprimiendo y ordenando libreto EPUB...');
                     const zip = await JSZip.loadAsync(file);
 
+                    // 1. Localizar archivo OPF principal desde META-INF/container.xml
                     let opfPath = null;
-                    const containerFile = zip.file('META-INF/container.xml');
+                    const containerFile = findZipFile(zip, 'META-INF/container.xml');
                     if (containerFile) {
                         const xml = await containerFile.async('string');
                         const doc = new DOMParser().parseFromString(xml, 'application/xml');
-                        const rf = doc.querySelector('rootfile');
+                        const rf = doc.getElementsByTagName('rootfile')[0] || doc.querySelector('rootfile');
                         if (rf) opfPath = rf.getAttribute('full-path');
                     }
 
@@ -1206,50 +1243,70 @@ mientras viva vuestra fe.`
                     let orderedFiles = [];
                     let bookTitle = file.name.replace(/\.epub$/i, '');
 
-                    if (opfPath && zip.file(opfPath)) {
-                        const opfContent = await zip.file(opfPath).async('string');
-                        const opfDoc = new DOMParser().parseFromString(opfContent, 'application/xml');
-                        const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+                    if (opfPath) {
+                        const opfFile = findZipFile(zip, opfPath);
+                        if (opfFile) {
+                            const opfContent = await opfFile.async('string');
+                            const opfDoc = new DOMParser().parseFromString(opfContent, 'application/xml');
+                            const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/')) : '';
 
-                        const tEl = opfDoc.querySelector('title, dc\\:title');
-                        if (tEl && tEl.textContent) bookTitle = tEl.textContent.trim();
+                            // Extraer título
+                            const titleTags = opfDoc.getElementsByTagNameNS('*', 'title');
+                            if (titleTags.length > 0 && titleTags[0].textContent) {
+                                bookTitle = titleTags[0].textContent.trim();
+                            }
 
-                        const manifest = {};
-                        opfDoc.querySelectorAll('manifest > item').forEach(it => {
-                            manifest[it.getAttribute('id')] = opfDir + it.getAttribute('href');
-                        });
+                            // Mapear el manifiesto <manifest><item id="..." href="..."/></manifest> ignorando namespaces
+                            const manifest = {};
+                            const items = opfDoc.getElementsByTagNameNS('*', 'item');
+                            for (let i = 0; i < items.length; i++) {
+                                const id = items[i].getAttribute('id');
+                                const href = items[i].getAttribute('href');
+                                if (id && href) {
+                                    manifest[id] = resolveZipPath(opfDir, href);
+                                }
+                            }
 
-                        opfDoc.querySelectorAll('spine > itemref').forEach(ref => {
-                            const id = ref.getAttribute('idref');
-                            if (manifest[id]) orderedFiles.push(manifest[id]);
-                        });
+                            // Obtener el orden exacto de lectura de la espina <spine><itemref idref="..."/></spine>
+                            const itemrefs = opfDoc.getElementsByTagNameNS('*', 'itemref');
+                            for (let i = 0; i < itemrefs.length; i++) {
+                                const idref = itemrefs[i].getAttribute('idref');
+                                if (idref && manifest[idref]) {
+                                    orderedFiles.push(manifest[idref]);
+                                }
+                            }
+                        }
                     }
 
+                    // Fallback si la espina del EPUB estuviese dañada: orden natural de archivos XHTML
                     if (orderedFiles.length === 0) {
-                        orderedFiles = Object.keys(zip.files).filter(k => /\.(xhtml|html|htm)$/i.test(k) && !k.includes('toc')).sort();
+                        orderedFiles = Object.keys(zip.files)
+                            .filter(k => /\.(xhtml|html|htm)$/i.test(k) && !/(toc|nav|cover|cubierta|colophon)/i.test(k))
+                            .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
                     }
 
                     const parts = [];
                     for (const p of orderedFiles) {
-                        const clean = decodeURIComponent(p);
-                        const zf = zip.file(clean) || zip.file(p);
+                        const zf = findZipFile(zip, p);
                         if (zf) {
                             const text = await zf.async('string');
-                            if (text.replace(/<[^>]+>/g, '').trim().length > 60) {
+                            // Filtrar archivos que solo tienen imágenes o créditos editoriales vacíos
+                            const cleanText = text.replace(/<[^>]+>/g, '').trim();
+                            if (cleanText.length > 40 && !/^(portada|cubierta|índice|indice|credits|colophon)$/i.test(cleanText)) {
                                 parts.push(text);
                             }
                         }
                     }
 
                     if (parts.length === 0) {
-                        showToast('⚠️ No se encontró texto legible en el EPUB.');
+                        showToast('⚠️ No se encontró texto de teatro legible en el EPUB.');
                         return;
                     }
 
-                    loadContent(bookTitle, parts.join('\n<hr/>\n'), true);
+                    loadContent(bookTitle, parts.join('\n\n<hr/>\n\n'), true);
                     document.getElementById('uploadModal').classList.add('hidden');
                     document.getElementById('uploadModal').classList.remove('flex');
-                    showToast(`📖 «${bookTitle}» cargado.`);
+                    showToast(`📖 «${bookTitle}» listo para leer.`);
                 } else {
                     const text = await file.text();
                     const isHtml = /\.(html|htm|xhtml)$/i.test(name);
